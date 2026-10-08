@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
-
 import Marquee from "react-fast-marquee";
 
 const Loading = ({ percent }: { percent: number }) => {
@@ -10,14 +9,17 @@ const Loading = ({ percent }: { percent: number }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [clicked, setClicked] = useState(false);
 
-  if (percent >= 100) {
-    setTimeout(() => {
-      setLoaded(true);
+  // Fix: Use useEffect for percent changes instead of direct if statement
+  useEffect(() => {
+    if (percent >= 100) {
       setTimeout(() => {
-        setIsLoaded(true);
-      }, 1000);
-    }, 600);
-  }
+        setLoaded(true);
+        setTimeout(() => {
+          setIsLoaded(true);
+        }, 1000);
+      }, 600);
+    }
+  }, [percent]);
 
   useEffect(() => {
     import("./utils/initialFX").then((module) => {
@@ -31,7 +33,7 @@ const Loading = ({ percent }: { percent: number }) => {
         }, 900);
       }
     });
-  }, [isLoaded]);
+  }, [isLoaded, setIsLoading]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
     const { currentTarget: target } = e;
@@ -46,7 +48,7 @@ const Loading = ({ percent }: { percent: number }) => {
     <>
       <div className="loading-header">
         <a href="/#" className="loader-title" data-cursor="disable">
-          Logo
+          V@!$HU
         </a>
         <div className={`loaderGame ${clicked && "loader-out"}`}>
           <div className="loaderGame-container">
@@ -103,12 +105,14 @@ export const setProgress = (setLoading: (value: number) => void) => {
     } else {
       clearInterval(interval);
       interval = setInterval(() => {
-        percent = percent + Math.round(Math.random());
+        percent = percent + Math.round(Math.random() * 2);
         setLoading(percent);
-        if (percent > 91) {
+        // Fix: Continue until 100, not stop at 91
+        if (percent >= 100) {
           clearInterval(interval);
+          setLoading(100);
         }
-      }, 2000);
+      }, 500); // Changed from 2000 to 500 (faster loading)
     }
   }, 100);
 
